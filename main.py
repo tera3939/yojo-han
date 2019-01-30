@@ -37,6 +37,16 @@ def user(user_name: str) -> Response:
     return Response(json.dumps(actor_object), content_type="application/activity+json")
 
 
+@app.route("/inbox", methods=["POST"])
+def inbox() -> Response:
+    return Response("OK", status=200)
+
+
+@app.route("/outbox", methods=["POST"])
+def outbox() -> Response:
+    return Response("OK", status=200)
+
+
 @app.route("/.well-known/webfinger")
 def webfinger() -> Response:
     global ACCT
