@@ -42,16 +42,17 @@ def __parse(request: Request) -> Dict[str, str]:
 def __build(request: Request, body: bytes, signed_headers: Optional[str]) -> str:
     if signed_headers is None:
         signed_headers = "date"
-    signed_string = ""
+    header_elements = []
     for header_name in signed_headers.split(" "):
         if header_name == "(request-target)":
-            method = request.method
+            method = request.method.lower()
             path = request.path
-            signed_string += f"(request-target): {method} {path}\n"
+            header_elements.append(f"(request-target): {method} {path}\n")
         elif header_name == "digest":
             body_digest = SHA256.new(body)
-            signed_string += f"digest: SHA-256={base64.standard_b64encode(body_digest.digest())}\n"
+            encoded_digest = base64.standard_b64encode(body_digest.digest()).decode()
+            header_elements.append(f"digest: SHA-256={encoded_digest}\n")
         else:
             header = request.headers[header_name]
-            signed_string += f"{header_name}: {header}\n"
-    return signed_string
+            header_elements.append(f"{header_name}: {header}\n")
+    return "\n".join(header_elements)
