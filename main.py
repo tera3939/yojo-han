@@ -6,7 +6,9 @@ from flask import Flask, Response, request, render_template
 from pymongo import MongoClient
 
 import config
-from models import User
+import http_signature
+from activity_type import ActivityType
+from models import User, Following
 
 app = Flask(__name__)
 DB = MongoClient()[config.APP_NAME]
@@ -15,7 +17,7 @@ ACCT = re.compile(r"^acct:(\w+)@([\w.-]+)")
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("base.html")
 
 
 @app.route("/user/<user_name>")
@@ -29,6 +31,25 @@ def user(user_name: str) -> Response:
 
 @app.route("/inbox", methods=["POST"])
 def inbox() -> Response:
+    global DB
+
+    if request.method == "POST" and request.is_json:
+        result = http_signature.verify(request)
+        if result is None:
+            return Response(status=404)
+        request_body, actor = result
+        activity = json.loads(request_body.decode())
+        activity_type = activity["type"]
+        if activity_type == ActivityType.Follow:
+            following = Following(DB)
+            following.add(actor)
+        elif activity_type == ActivityType.UNDO:
+            following = Following(DB)
+            following.remove(actor["id"])
+        else:
+            pass
+    else:
+        return Response(status=404)
     return Response("OK", status=200)
 
 

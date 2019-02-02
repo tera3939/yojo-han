@@ -22,3 +22,14 @@ class Following:
 
     def get_list(self) -> Cursor:
         return self.__followers.find({})
+
+    def remove(self, following_id: str):
+        self.__followers.delete_one({"following.id": following_id})
+
+    def count(self):
+        count = self.__followers.estimated_document_count()
+        return {
+            "@context": "https://www.w3.org/ns/activitystreams",
+            "type": "OrderedCollection",
+            "totalItems": count
+        }
