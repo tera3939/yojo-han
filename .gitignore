@@ -1,5 +1,6 @@
 /__pycache__
 /models/__pycache__
+/http_signature/__pycache__
 /.mypy_cache
 /.venv
 /.idea
