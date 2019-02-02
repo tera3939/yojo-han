@@ -3,7 +3,7 @@ import re
 
 from flask import Flask, Response, , request, render_template
 
-import setting
+import config
 
 app = Flask(__name__)
 ACCT = re.compile(r"^acct:(\w+)@([\w.-]+)")
@@ -20,8 +20,8 @@ def user(user_name: str) -> Response:
         "@context": "https://www.w3.org/ns/activitystreams",
         "id": route_url(f"/user/{user_name}"),
         "type": "Person",
-        "name": setting.USERNAME,
-        "preferredUsername": setting.USERNAME,
+        "name": config.USERNAME,
+        "preferredUsername": config.USERNAME,
         "inbox": route_url("/inbox"),
 
         "publicKey": {
@@ -29,10 +29,10 @@ def user(user_name: str) -> Response:
             "type": "Key",
             "id": route_url(f"/user/{user_name}#main-key"),
             "owner": route_url(f"/user/{user_name}"),
-            "publicKeyPem": setting.KEYPAIR.publickey().export_key().decode()
+            "publicKeyPem": config.KEYPAIR.publickey().export_key().decode()
         }
     }
-    if user_name != setting.USERNAME:
+    if user_name != config.USERNAME:
         return Response(status=404)
     return Response(json.dumps(actor_object), content_type="application/activity+json")
 
@@ -60,7 +60,7 @@ def webfinger() -> Response:
             "href": f"https://{domain}/user/{user_id}"
         }]
     }
-    if user_id != setting.USERNAME or domain != setting.DOMAIN:
+    if user_id != config.USERNAME or domain != config.DOMAIN:
         return Response(status=404)
     return Response(json.dumps(j), content_type="application/json")
 
@@ -76,7 +76,7 @@ def host_meta() -> Response:
 
 
 def route_url(path: str) -> str:
-    return f"https://{setting.DOMAIN}{path}"
+    return f"https://{config.DOMAIN}{path}"
 
 
 if __name__ == "__main__":

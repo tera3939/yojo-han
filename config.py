@@ -5,6 +5,7 @@ from Crypto.PublicKey import RSA
 USERNAME = "user_name"
 DOMAIN = "domain.com"
 PRIVATEKEY_FILE = "privatekey.pem"
+
 if os.path.exists(PRIVATEKEY_FILE):
     with open(PRIVATEKEY_FILE, "r") as f:
         KEYPAIR = RSA.import_key(f.read())
