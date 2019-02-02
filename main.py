@@ -24,8 +24,6 @@ def user(user_name: str) -> Response:
     actor_object = User(DB).get_by_name(user_name)
     if user_name != config.USERNAME:
         return Response(status=404)
-    pprint.pprint(actor_object["actor"])
-    pprint.pprint(actor_object["actor"])
     return Response(json.dumps(actor_object["actor"]), content_type="application/activity+json")
 
 
@@ -43,6 +41,8 @@ def outbox() -> Response:
 def webfinger() -> Response:
     global ACCT
     resource = request.args.get("resource")
+    if resource is None:
+        return Response(status=404)
     user_id, domain = ACCT.match(resource).groups()
     j = {
         "subject": f"acct:{user_id}@{domain}",
@@ -64,7 +64,7 @@ def host_meta() -> Response:
 <XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
   <Link rel="lrdd" type="application/xrd+xml" template="{template_url}"/>
 </XRD>'''
-    return Response(xml_str, headers={'Content-Type': 'application/xrd+xml'})
+    return Response(xml_str, content_type='application/xrd+xml')
 
 
 def route_url(path: str) -> str:
