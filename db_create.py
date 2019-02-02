@@ -15,7 +15,7 @@ def create_users(db):
     :return: None
     """
     print("setup users")
-    user = db["users"]
+    user = db[config.USER_COLLECTION]
     user.create_index([("actor.id", 1)], unique=True)
     user.create_index([("created_at", -1)])
 

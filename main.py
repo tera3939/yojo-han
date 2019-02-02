@@ -1,10 +1,12 @@
 import json
+import pprint
 import re
 
 from flask import Flask, Response, request, render_template
 from pymongo import MongoClient
 
 import config
+from models import User
 
 app = Flask(__name__)
 DB = MongoClient()[config.APP_NAME]
@@ -18,25 +20,13 @@ def index():
 
 @app.route("/user/<user_name>")
 def user(user_name: str) -> Response:
-    actor_object = {
-        "@context": "https://www.w3.org/ns/activitystreams",
-        "id": route_url(f"/user/{user_name}"),
-        "type": "Person",
-        "name": config.USERNAME,
-        "preferredUsername": config.USERNAME,
-        "inbox": route_url("/inbox"),
-
-        "publicKey": {
-            "@context": "https://w3id.org/security/v1",
-            "type": "Key",
-            "id": route_url(f"/user/{user_name}#main-key"),
-            "owner": route_url(f"/user/{user_name}"),
-            "publicKeyPem": config.KEYPAIR.publickey().export_key().decode()
-        }
-    }
+    global DB
+    actor_object = User(DB).get_by_name(user_name)
     if user_name != config.USERNAME:
         return Response(status=404)
-    return Response(json.dumps(actor_object), content_type="application/activity+json")
+    pprint.pprint(actor_object["actor"])
+    pprint.pprint(actor_object["actor"])
+    return Response(json.dumps(actor_object["actor"]), content_type="application/activity+json")
 
 
 @app.route("/inbox", methods=["POST"])
