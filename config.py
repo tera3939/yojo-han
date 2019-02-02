@@ -8,7 +8,7 @@ USERNAME = "user_name"
 DOMAIN = "domain.com"
 PRIVATEKEY_FILE = "privatekey.pem"
 
-USER_COLLECTION = "users"
+USER_COLLECTION = "user"
 
 if os.path.exists(PRIVATEKEY_FILE):
     with open(PRIVATEKEY_FILE, "r") as f:

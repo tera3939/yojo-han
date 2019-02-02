@@ -1,9 +1,10 @@
 from pymongo import MongoClient
+from pymongo.database import Database
 
 import config
 
 
-def create_users(db):
+def create_user(db: Database):
     """
     {
         "actor": { ActorObject },
@@ -14,7 +15,7 @@ def create_users(db):
     :param db: データベースへのコネクション
     :return: None
     """
-    print("setup users")
+    print("setup user collection")
     user = db[config.USER_COLLECTION]
     user.create_index([("actor.id", 1)], unique=True)
     user.create_index([("created_at", -1)])
@@ -25,7 +26,7 @@ def create_db():
     con = MongoClient()
     db = con[config.APP_NAME]
 
-    create_users(db)
+    create_user(db)
     print("done")
 
 
