@@ -1,11 +1,13 @@
 import json
 import re
 
-from flask import Flask, Response, , request, render_template
+from flask import Flask, Response, request, render_template
+from pymongo import MongoClient
 
 import config
 
 app = Flask(__name__)
+DB = MongoClient()[config.APP_NAME]
 ACCT = re.compile(r"^acct:(\w+)@([\w.-]+)")
 
 

@@ -2,6 +2,8 @@ import os.path
 from Crypto.PublicKey import RSA
 
 
+APP_NAME = "yojo-han"
+
 USERNAME = "user_name"
 DOMAIN = "domain.com"
 PRIVATEKEY_FILE = "privatekey.pem"
