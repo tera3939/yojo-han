@@ -8,6 +8,8 @@ flask = "*"
 requests = "*"
 pycryptodome = "*"
 flask-socketio = "*"
+pymongo = "*"
+bcrypt = "*"
 
 [dev-packages]
 
