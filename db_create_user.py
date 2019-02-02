@@ -1,5 +1,7 @@
-from models import User
+from pymongo import MongoClient
+from pymongo.database import Database
 
+from models import User
 import config
 
 
@@ -7,11 +9,11 @@ def route_url(path: str) -> str:
     return f"https://{config.DOMAIN}{path}"
 
 
-def create_user():
+def create_user(db: Database):
     """
         雑に適当なユーザーを詰め込む
     """
-    user = User()
+    user = User(db)
     print("add user:", config.USERNAME)
     user.add({
         "@context": "https://www.w3.org/ns/activitystreams",
@@ -33,4 +35,6 @@ def create_user():
 
 
 if __name__ == "__main__":
-    create_user()
+    db = MongoClient()[config.APP_NAME]
+    create_user(db)
+    db.close()
