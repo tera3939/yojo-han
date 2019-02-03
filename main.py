@@ -1,12 +1,15 @@
 import json
 import pprint
 import re
+from urllib.parse import urlparse
 
+import requests
 from flask import Flask, Response, request, render_template
 from pymongo import MongoClient
 
 import config
 import http_signature
+import util
 from activity_type import ActivityType
 from models import User, Follower
 
@@ -61,9 +64,54 @@ def inbox() -> Response:
     return Response("OK", status=200)
 
 
-@app.route("/outbox", methods=["POST"])
+@app.route("/outbox", methods=["GET", "POST"])
 def outbox() -> Response:
-    return Response("OK", status=200)
+    global DB
+
+    if request.method == "POST" and request.is_json:
+        activity = json.loads(request.data.decode())
+        pprint.pprint(activity)
+
+        url = urlparse(activity["object"])
+        host = url.netloc
+        resource = url.path
+        headers = {
+            "Host": host,
+            "Date": util.get_time(),
+            "Accept": "application/ld+json,application/activity+json",
+            "Content-Type": "application/ld+json"
+        }
+        user = User(DB).get()
+        key_id = user["actor"]["publicKey"]["id"]
+        signature = http_signature.build("POST", resource, headers, key_id, config.KEYPAIR)
+        headers["Signature"] = signature
+
+        actor = util.get_actor(url.geturl())
+        if actor is None:
+            return Response("Error: actor is None", status=404)
+        if "outbox" in actor:
+            outbox = actor["outbox"]
+            pprint.pprint(actor)
+            pprint.pprint(headers)
+            r = requests.request("POST", outbox, headers=headers, data=activity)
+            return Response(r.text, status=200)
+        return Response(status=404)
+    else:
+        url = urlparse("https://mastodon.cloud/users/tera/inbox")
+        host = url.netloc
+        resource = url.path
+        headers = {
+            "Host": host,
+            "Date": util.get_time(),
+            "Accept": "application/ld+json,application/activity+json",
+            "Content-Type": "application/ld+json"
+        }
+        user = User(DB).get()
+        key_id = user["actor"]["publicKey"]["id"]
+        signature = http_signature.build("POST", resource, headers, key_id, config.KEYPAIR)
+        headers["Signature"] = signature
+        pprint.pprint(headers)
+        return Response(status=200)
 
 
 @app.route("/.well-known/webfinger")
