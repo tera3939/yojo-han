@@ -1,5 +1,7 @@
+import base64
 from time import mktime
 from datetime import datetime
+from typing import Optional, Dict
 from wsgiref.handlers import format_date_time
 
 import requests
@@ -49,3 +51,28 @@ class Util:
         stamp = mktime(now.timetuple())
         date = format_date_time(stamp)
         return date
+
+    @staticmethod
+    def build_signature_string(method: str, resource: str, headers: Dict[str, str], body: bytes, headers_string: Optional[str]) -> str:
+        if headers_string is None:
+            headers_string = "date"
+        header_elements = []
+        for header_name in headers_string.split(" "):
+            if header_name == "(request-target)":
+                method = method.lower()
+                header_elements.append(f"(request-target): {method} {resource}")
+            elif header_name == "digest":
+                body_digest = SHA256.new(body)
+                encoded_digest = base64.standard_b64encode(body_digest.digest()).decode()
+                header_elements.append(f"digest: SHA-256={encoded_digest}")
+            else:
+                header = headers[header_name]
+                header_elements.append(f"{header_name}: {header}")
+        return "\n".join(header_elements)
+
+    @staticmethod
+    def parse_signature_string(signature_string: str) -> Dict[str, str]:
+        parts = signature_string.split(",")
+        params = dict(((key, value.strip('"')) for key, value in
+                       map(lambda part: part.split("=", 1), parts)))
+        return params
