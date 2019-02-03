@@ -65,6 +65,7 @@ def create_db():
     create_following(db)
     create_follower(db)
 
+    con.close()
     print("done")
 
 
