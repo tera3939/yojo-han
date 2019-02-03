@@ -12,7 +12,7 @@ class User:
         self.__user: Collection = db[config.USER_COLLECTION]
 
     def add(self, actor, password: bytes):
-        # TODO: DuplicationErrorとかの対応
+        # TODO: DuplicateKeyErrorの対応、どうする?
         self.__user.insert_one({
             "actor": actor,
             "password": bcrypt.hashpw(password, bcrypt.gensalt()),
