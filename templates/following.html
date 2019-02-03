@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <ul>
+        {% for following in following_list %}
+            {% set f = following["following"] %}
+            <h2>{{ f["preferredUsername"] }}</h2>
+            <p>{{ f["type"] }}</p>
+        {% endfor %}
+    </ul>
+{% endblock %}

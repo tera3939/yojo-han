@@ -29,6 +29,15 @@ def user(user_name: str) -> Response:
     return Response(json.dumps(actor_object["actor"]), content_type="application/activity+json")
 
 
+@app.route("/following")
+def following():
+    global DB
+    f = Following(DB)
+    following_list = list(f.get_list())
+    print(following_list)
+    return render_template("following.html", following_list=following_list)
+
+
 @app.route("/inbox", methods=["POST"])
 def inbox() -> Response:
     global DB
@@ -41,11 +50,11 @@ def inbox() -> Response:
         activity = json.loads(request_body.decode())
         activity_type = activity["type"]
         if activity_type == ActivityType.FOLLOW:
-            following = Following(DB)
-            following.add(actor)
+            following_collection = Following(DB)
+            following_collection.add(actor)
         elif activity_type == ActivityType.UNDO:
-            following = Following(DB)
-            following.remove(actor["id"])
+            following_collection = Following(DB)
+            following_collection.remove(actor["id"])
         else:
             pass
     else:
