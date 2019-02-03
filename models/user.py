@@ -21,3 +21,7 @@ class User:
 
     def get_by_name(self, name: str):
         return self.__user.find_one({"$or": [{"actor.preferredUsername": name}, {"actor.name": name}]})
+
+    def get(self):
+        # userは唯一人という前提のもと、この操作は正義。
+        return self.__user.find_one({})
