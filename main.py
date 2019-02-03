@@ -64,7 +64,12 @@ def webfinger() -> Response:
     resource = request.args.get("resource")
     if resource is None:
         return Response(status=404)
-    user_id, domain = ACCT.match(resource).groups()
+
+    matched_resources = ACCT.match(resource)
+    if matched_resources is None:
+        return Response(status=404)
+    user_id, domain = matched_resources.groups()
+
     j = {
         "subject": f"acct:{user_id}@{domain}",
         "links": [{
@@ -75,6 +80,7 @@ def webfinger() -> Response:
     }
     if user_id != config.USERNAME or domain != config.DOMAIN:
         return Response(status=404)
+
     return Response(json.dumps(j), content_type="application/json")
 
 
