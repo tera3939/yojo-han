@@ -63,7 +63,7 @@ def build(method: str, resource: str, headers: Dict[str, str], key_id: str, keyp
     headers_string = "(request-target) " + " ".join(headers.keys())
     # TODO: digestに対応
     signature_string = build_signature_string(method, resource, headers, None, headers_string)
-    signature = base64.standard_b64encode(sign_message(signature_string, keypair))
+    signature = base64.standard_b64encode(sign_message(signature_string, keypair)).decode()
 
     # TODO: algorithmをrsa-sha256に固定してるけどいいんすか?
     http_signature = f'keyId="{key_id}",algorithm="rsa-sha256",headers="{headers_string}",signature="{signature}"'
@@ -85,7 +85,7 @@ def verify(request: Request):
     signature: str = signature_params["signature"]
 
     signed_string = build_signature_string(request.method, request.path, request.headers,
-                                                body, signature_params["headers"])
+                                           body, signature_params["headers"])
     public_key = RSA.import_key(actor["publicKey"]["publicKeyPem"])
 
     decoded_signature = base64.b64decode(signature)
