@@ -40,7 +40,7 @@ def inbox() -> Response:
         request_body, actor = result
         activity = json.loads(request_body.decode())
         activity_type = activity["type"]
-        if activity_type == ActivityType.Follow:
+        if activity_type == ActivityType.FOLLOW:
             following = Following(DB)
             following.add(actor)
         elif activity_type == ActivityType.UNDO:

@@ -2,5 +2,8 @@ from enum import Enum
 
 
 class ActivityType(Enum):
-    Follow = "Follow"
+    FOLLOW = "Follow"
     UNDO = "Undo"
+
+    def __eq__(self, other):
+        return self.value == other
