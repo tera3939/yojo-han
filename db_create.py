@@ -33,10 +33,27 @@ def create_following(db: Database):
     :param db: データベースへのコネクション
     :return: None
     """
-    print("setup relation collection")
-    relation = db[config.FOLLOWING_COLLECTION]
-    relation.create_index([("following.id", 1)], unique=True)
-    relation.create_index([("created_at", -1)])
+    print("setup following collection")
+    following = db[config.FOLLOWING_COLLECTION]
+    following.create_index([("following.id", 1)], unique=True)
+    following.create_index([("created_at", -1)])
+
+
+def create_follower(db: Database):
+    """
+    UserをフォローしてきたActorを格納するコレクション。
+    {
+        "following": ActorObject フォローしてきたActor
+        "created_at": ISODate フォローされた日時,
+        "_id": MongoDBが作るユニークID
+    }
+    :param db: データベースへのコネクション
+    :return: None
+    """
+    print("setup follower collection")
+    following = db[config.FOLLOWING_COLLECTION]
+    following.create_index([("follower.id", 1)], unique=True)
+    following.create_index([("created_at", -1)])
 
 
 def create_db():
@@ -46,6 +63,8 @@ def create_db():
 
     create_user(db)
     create_following(db)
+    create_follower(db)
+
     print("done")
 
 

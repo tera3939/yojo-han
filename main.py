@@ -8,7 +8,7 @@ from pymongo import MongoClient
 import config
 import http_signature
 from activity_type import ActivityType
-from models import User, Following
+from models import User, Follower
 
 app = Flask(__name__)
 DB = MongoClient()[config.APP_NAME]
@@ -29,13 +29,12 @@ def user(user_name: str) -> Response:
     return Response(json.dumps(actor_object["actor"]), content_type="application/activity+json")
 
 
-@app.route("/following")
-def following():
+@app.route("/follower")
+def follower():
     global DB
-    f = Following(DB)
-    following_list = list(f.get_list())
-    print(following_list)
-    return render_template("following.html", following_list=following_list)
+    f = Follower(DB)
+    follower_list = f.get_list().sort([("created_at", -1)])
+    return render_template("follower.html", follower_list=follower_list)
 
 
 @app.route("/inbox", methods=["POST"])
@@ -50,11 +49,11 @@ def inbox() -> Response:
         activity = json.loads(request_body.decode())
         activity_type = activity["type"]
         if activity_type == ActivityType.FOLLOW:
-            following_collection = Following(DB)
-            following_collection.add(actor)
+            follower_collection = Follower(DB)
+            follower_collection.add(actor)
         elif activity_type == ActivityType.UNDO:
-            following_collection = Following(DB)
-            following_collection.remove(actor["id"])
+            follower_collection = Follower(DB)
+            follower_collection.remove(actor["id"])
         else:
             pass
     else:

@@ -2,8 +2,8 @@
 
 {% block content %}
     <ul>
-        {% for following in following_list %}
-            {% set f = following["following"] %}
+        {% for follower in follower_list %}
+            {% set f = follower["follower"] %}
             <h2>{{ f["preferredUsername"] }}</h2>
             <p>{{ f["type"] }}</p>
         {% endfor %}

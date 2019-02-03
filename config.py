@@ -10,6 +10,7 @@ PRIVATEKEY_FILE = "privatekey.pem"
 
 USER_COLLECTION = "user"
 FOLLOWING_COLLECTION = "following"
+FOLLOWER_COLLECTION = "follower"
 
 if os.path.exists(PRIVATEKEY_FILE):
     with open(PRIVATEKEY_FILE, "r") as f:
