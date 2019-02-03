@@ -47,12 +47,12 @@ def __build(request: Request, body: bytes, signed_headers: Optional[str]) -> str
         if header_name == "(request-target)":
             method = request.method.lower()
             path = request.path
-            header_elements.append(f"(request-target): {method} {path}\n")
+            header_elements.append(f"(request-target): {method} {path}")
         elif header_name == "digest":
             body_digest = SHA256.new(body)
             encoded_digest = base64.standard_b64encode(body_digest.digest()).decode()
-            header_elements.append(f"digest: SHA-256={encoded_digest}\n")
+            header_elements.append(f"digest: SHA-256={encoded_digest}")
         else:
             header = request.headers[header_name]
-            header_elements.append(f"{header_name}: {header}\n")
+            header_elements.append(f"{header_name}: {header}")
     return "\n".join(header_elements)
