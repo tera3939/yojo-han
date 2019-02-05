@@ -26,17 +26,22 @@ def index():
 @app.route("/user/<user_name>")
 def user(user_name: str) -> Response:
     global DB
+
     actor_object = User(DB).get_by_name(user_name)
+
     if user_name != config.USERNAME:
         return Response(status=404)
+
     return Response(json.dumps(actor_object["actor"]), content_type="application/activity+json")
 
 
 @app.route("/follower")
 def follower():
     global DB
+
     f = Follower(DB)
     follower_list = f.get_list().sort([("created_at", -1)])
+
     return render_template("follower.html", follower_list=follower_list)
 
 
@@ -46,11 +51,14 @@ def inbox() -> Response:
 
     if request.method == "POST" and request.is_json:
         result = http_signature.verify(request)
+
         if result is None:
             return Response(status=404)
+
         request_body, actor = result
         activity = json.loads(request_body.decode())
         activity_type = activity["type"]
+
         if activity_type == ActivityType.FOLLOW:
             follower_collection = Follower(DB)
             follower_collection.add(actor)
@@ -61,71 +69,61 @@ def inbox() -> Response:
             pass
     else:
         return Response(status=404)
+
     return Response("OK", status=200)
 
 
-@app.route("/outbox", methods=["GET", "POST"])
+@app.route("/outbox", methods=["POST"])
 def outbox() -> Response:
     global DB
 
-    if request.method == "POST" and request.is_json:
-        activity = json.loads(request.data.decode())
-        pprint.pprint(activity)
+    if not request.is_json:
+        return Response("Error: request is not json", status=404)
 
-        url = urlparse(activity["object"])
-        host = url.netloc
-        resource = url.path
-        headers = {
-            "Host": host,
-            "Date": util.get_time(),
-            "Accept": "application/ld+json,application/activity+json",
-            "Content-Type": "application/ld+json"
-        }
-        user = User(DB).get()
-        key_id = user["actor"]["publicKey"]["id"]
-        signature = http_signature.build("POST", resource, headers, key_id, config.KEYPAIR)
-        headers["Signature"] = signature
+    activity = json.loads(request.data.decode())
+    actor = util.get_actor(activity["object"])
 
-        actor = util.get_actor(url.geturl())
-        if actor is None:
-            return Response("Error: actor is None", status=404)
-        if "outbox" in actor:
-            outbox = actor["outbox"]
-            pprint.pprint(actor)
-            pprint.pprint(headers)
-            r = requests.request("POST", outbox, headers=headers, data=activity)
-            return Response(r.text, status=200)
-        return Response(status=404)
-    else:
-        url = urlparse("https://mastodon.cloud/users/tera/inbox")
-        host = url.netloc
-        resource = url.path
-        headers = {
-            "Host": host,
-            "Date": util.get_time(),
-            "Accept": "application/ld+json,application/activity+json",
-            "Content-Type": "application/ld+json"
-        }
-        user = User(DB).get()
-        key_id = user["actor"]["publicKey"]["id"]
-        signature = http_signature.build("POST", resource, headers, key_id, config.KEYPAIR)
-        headers["Signature"] = signature
-        pprint.pprint(headers)
-        return Response(status=200)
+    if actor is None:
+        return Response("Error: actor is None", status=404)
+    if "inbox" not in actor:
+        return Response("Error: actor dont have inbox", status=404)
+
+    inbox_url = actor["inbox"]
+    url = urlparse(inbox_url)
+    host = url.netloc
+    resource = url.path
+    headers = {
+        "Host": host,
+        "Date": util.get_time(),
+        "Accept": 'application/activity+json,application/ld+json;profile="https://www.w3.org/ns/activitystreams"',
+        "Content-Type": "application/activity+json;charset=UTF-8"
+    }
+
+    user_collection = User(DB).get()
+    key_id = user_collection["actor"]["publicKey"]["id"]
+    signature = http_signature.build("POST", resource, headers, key_id, config.KEYPAIR)
+    headers["Signature"] = signature
+
+    result = requests.request("POST", inbox, headers=headers, json=activity)
+
+    return Response(result.text, status=result.status_code)
 
 
 @app.route("/.well-known/webfinger")
 def webfinger() -> Response:
     global ACCT
+
     resource = request.args.get("resource")
+
     if resource is None:
         return Response(status=404)
 
     matched_resources = ACCT.match(resource)
+
     if matched_resources is None:
         return Response(status=404)
-    user_id, domain = matched_resources.groups()
 
+    user_id, domain = matched_resources.groups()
     j = {
         "subject": f"acct:{user_id}@{domain}",
         "links": [{
@@ -134,6 +132,7 @@ def webfinger() -> Response:
             "href": f"https://{domain}/user/{user_id}"
         }]
     }
+
     if user_id != config.USERNAME or domain != config.DOMAIN:
         return Response(status=404)
 
@@ -147,6 +146,7 @@ def host_meta() -> Response:
 <XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
   <Link rel="lrdd" type="application/xrd+xml" template="{template_url}"/>
 </XRD>'''
+
     return Response(xml_str, content_type='application/xrd+xml')
 
 
