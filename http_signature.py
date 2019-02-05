@@ -40,7 +40,7 @@ def build_signature_string(method: str, resource: str, headers: Dict[str, str], 
             header_elements.append(f"digest: SHA-256={encoded_digest}")
         else:
             header = headers[header_name]
-            header_elements.append(f"{header_name}: {header}")
+            header_elements.append(f"{header_name.lower()}: {header}")
     return "\n".join(header_elements)
 
 
@@ -66,6 +66,7 @@ def build(method: str, resource: str, headers: Dict[str, str], key_id: str, keyp
     signature_string = build_signature_string(method, resource, headers, None, headers_string)
     signature = base64.standard_b64encode(sign_message(signature_string, keypair)).decode()
 
+    headers_string = " ".join(map(lambda key: key.lower(), headers_string.split(" ")))
     # TODO: algorithmをrsa-sha256に固定してるけどいいんすか?
     http_signature = f'keyId="{key_id}",algorithm="rsa-sha256",headers="{headers_string}",signature="{signature}"'
 
