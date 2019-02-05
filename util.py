@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from functools import lru_cache
 from time import mktime
 from typing import Optional
 from wsgiref.handlers import format_date_time
@@ -9,6 +10,7 @@ import requests
 from json_type import Json
 
 
+@lru_cache()
 def fetch_json(url: str) -> Optional[Json]:
     headers = {"Accept": "application/activity+json, application/ld+json"}
     res = requests.request("GET", url, headers=headers)
