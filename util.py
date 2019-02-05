@@ -25,10 +25,16 @@ def get_actor(key_id: str) -> Optional[Json]:
     actor_properties = ["id", "publicKey", "inbox"]
     actor = None
     key_object = fetch_json(key_id)
+    if key_object is None:
+        return None
     if all((key in key_object for key in key_properties)):
+        # key_objectのtypeがKeyのときの処理
         actor = fetch_json(key_object["owner"])
+        if actor is None:
+            return None
         actor["publicKey"] = key_object
     elif all((key in key_object for key in actor_properties)):
+        # key_objectがActorObjectのときの処理
         actor = key_object
     return actor
 
