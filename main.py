@@ -70,7 +70,7 @@ def inbox() -> Response:
     else:
         return Response(status=404)
 
-    return Response("OK", status=200)
+    return Response("OK", status=202)
 
 
 @app.route("/outbox", methods=["POST"])
