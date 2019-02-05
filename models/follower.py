@@ -5,10 +5,11 @@ from pymongo.cursor import Cursor
 from pymongo.database import Database
 
 import config
+from json_type import Json
 
 
 class Follower:
-    def __init__(self, db: Database):
+    def __init__(self, db: Database) -> None:
         self.__followers: Collection = db[config.FOLLOWER_COLLECTION]
 
     def add(self, follower):
@@ -18,7 +19,7 @@ class Follower:
             "created_at": datetime.now()
         })
 
-    def get_by_name(self, name: str):
+    def get_by_name(self, name: str) -> Json:
         return self.__followers.find_one({"$or": [{"follower.preferredUsername": name}, {"follower.name": name}]})
 
     def get_list(self) -> Cursor:
@@ -27,5 +28,5 @@ class Follower:
     def remove(self, following_id: str):
         self.__followers.delete_one({"follower.id": following_id})
 
-    def count(self):
+    def count(self) -> int:
         return self.__followers.estimated_document_count()

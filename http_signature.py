@@ -1,5 +1,5 @@
 import base64
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
@@ -8,6 +8,7 @@ from Crypto.Signature import pkcs1_15
 from flask import Request
 
 import util
+from json_type import Json
 
 
 def sign_message(message: str, keypair: RsaKey) -> bytes:
@@ -71,7 +72,7 @@ def build(method: str, resource: str, headers: Dict[str, str], key_id: str, keyp
     return http_signature
 
 
-def verify(request: Request):
+def verify(request: Request) -> Optional[Tuple[bytes, Json]]:
     """
     POSTされたRequestをHTTP Signatureで検証し、成功したらデータと送信元のActorObjectを返す。
     :return:
@@ -81,8 +82,10 @@ def verify(request: Request):
     signature_params = parse_signature_string(request.headers["Signature"])
     body: bytes = request.data
     key_id: str = signature_params["keyId"]
-    actor = util.get_actor(key_id)
     signature: str = signature_params["signature"]
+    actor = util.get_actor(key_id)
+    if actor is None:
+        return None
 
     signed_string = build_signature_string(request.method, request.path, request.headers,
                                            body, signature_params["headers"])
