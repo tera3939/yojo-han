@@ -59,7 +59,7 @@ def create_follower(db: Database):
 def create_db():
     print("connection")
     con = MongoClient()
-    db = con[config.APP_NAME]
+    db = con[config.DB_NAME]
 
     create_user(db)
     create_following(db)

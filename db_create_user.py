@@ -36,6 +36,6 @@ def create_user(db: Database):
 
 if __name__ == "__main__":
     con = MongoClient()
-    db = con[config.APP_NAME]
+    db = con[config.DB_NAME]
     create_user(db)
     con.close()

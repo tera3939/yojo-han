@@ -15,7 +15,7 @@ from activity_type import ActivityType
 from models import User, Follower
 
 app = Flask(__name__)
-DB = MongoClient()[config.APP_NAME]
+DB = MongoClient()[config.DB_NAME]
 ACCT = re.compile(r"^acct:(\w+)@([\w.-]+)")
 
 
