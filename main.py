@@ -1,6 +1,7 @@
 import json
 import pprint
 import re
+from typing import Optional
 from urllib.parse import urlparse
 
 import requests
@@ -81,10 +82,15 @@ def outbox() -> Response:
         return Response("Error: request is not json", status=404)
 
     activity = json.loads(request.data.decode())
-    actor = util.get_actor(activity["object"])
 
+    actor_id = get_id_by_activity(activity)
+    if actor_id is None:
+        return Response("Error: Not Found Object ID", status=404)
+
+    actor = util.get_actor(actor_id)
     if actor is None:
         return Response("Error: actor is None", status=404)
+
     if "inbox" not in actor:
         return Response("Error: actor dont have inbox", status=404)
 
@@ -152,6 +158,28 @@ def host_meta() -> Response:
 
 def route_url(path: str) -> str:
     return f"https://{config.DOMAIN}{path}"
+
+
+def get_id_by_activity(act) -> Optional[str]:
+    def __inner(activity, count):
+        if count > 3:
+            return None
+
+        # TODO: 流石にこれはどうにかしたい
+        if activity["type"] in ["Application", "Group", "Organization", "Person", "Service"]:
+            # if activity is ActorObject
+            if "id" in activity:
+                return activity["id"]
+            else:
+                return None
+
+        if "object" in activity:
+            if type(activity["object"]) is str:
+                return activity["object"]
+            return __inner(activity["object"], count+1)
+        return None
+
+    return __inner(act, 0)
 
 
 if __name__ == "__main__":
