@@ -13,10 +13,11 @@ from json_type import Json
 @lru_cache()
 def fetch_json(url: str) -> Optional[Json]:
     headers = {"Accept": "application/activity+json, application/ld+json"}
-    res = requests.request("GET", url, headers=headers)
     try:
+        res = requests.request("GET", url, headers=headers)
         return json.loads(res.content.decode())
-    except json.JSONDecodeError:
+    except:
+        # TODO: なんかいい感じの処理
         return None
 
 
