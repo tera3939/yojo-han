@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block head %}
+    {{super()}}
+    <script type="text/javascript" src="{{ url_for('static', filename='main.js') }}"></script>
+{% endblock %}
+
+
+{% block content %}
+<div id="send_form">
+    <p>
+        <label for="actor_id">Actor's id:{{ user["id"] }}</label>
+        <input type="hidden" value="{{ user['id'] }}" id="actor_id">
+    </p>
+    <p>
+        <label for="object_id">Object's id:</label>
+        <input type="url" pattern="hoge" id="object_id" required>
+    </p>
+    <input type="radio" value="follow" name="action_radio" checked="checked">follow</input>
+    <input type="radio" value="unfollow" name="action_radio">unfollow</input>
+    <button id="send_button">send</button>
+</div>
+<div id="result"></div>
+{% endblock %}

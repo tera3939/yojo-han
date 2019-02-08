@@ -21,7 +21,10 @@ ACCT = re.compile(r"^acct:(\w+)@([\w.-]+)")
 
 @app.route("/")
 def index():
-    return render_template("base.html")
+    global DB
+    user_collection = User(DB)
+    u = user_collection.get()["actor"]
+    return render_template("index.html", user=u)
 
 
 @app.route("/user/<user_name>")
