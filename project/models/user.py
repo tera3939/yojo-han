@@ -4,8 +4,8 @@ import bcrypt
 from pymongo.collection import Collection
 from pymongo.database import Database
 
-import config
-from json_type import Json
+from project import config
+from project.json_type import Json
 
 
 class User:

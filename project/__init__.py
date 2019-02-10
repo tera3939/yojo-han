@@ -8,11 +8,11 @@ import requests
 from flask import Flask, Response, request, render_template
 from pymongo import MongoClient
 
-import config
-import http_signature
-import util
-from activity_type import ActivityType
-from models import User, Follower
+from project import config
+from project import http_signature
+from project import util
+from project.activity_type import ActivityType
+from project.models import User, Follower
 
 app = Flask(__name__)
 DB = MongoClient()[config.DB_NAME]
@@ -82,7 +82,7 @@ def outbox() -> Response:
     global DB
 
     if not request.is_json:
-        return Response("Error: request is not json", status=404)
+        return Response("Error: Request is not json", status=404)
 
     activity = json.loads(request.data.decode())
 
@@ -92,10 +92,10 @@ def outbox() -> Response:
 
     actor = util.get_actor(actor_id)
     if actor is None:
-        return Response("Error: actor is None", status=404)
+        return Response("Error: Actor is None", status=404)
 
     if "inbox" not in actor:
-        return Response("Error: actor dont have inbox", status=404)
+        return Response("Error: Actor don't have inbox", status=404)
 
     inbox_url = actor["inbox"]
     url = urlparse(inbox_url)
@@ -183,7 +183,3 @@ def get_id_by_activity(act) -> Optional[str]:
         return None
 
     return __inner(act, 0)
-
-
-if __name__ == "__main__":
-    app.run(debug=True)

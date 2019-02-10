@@ -7,8 +7,8 @@ from Crypto.PublicKey.RSA import RsaKey
 from Crypto.Signature import pkcs1_15
 from flask import Request
 
-import util
-from json_type import Json
+from project import util
+from project.json_type import Json
 
 
 def sign_message(message: str, keypair: RsaKey) -> bytes:

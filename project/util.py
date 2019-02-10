@@ -7,7 +7,7 @@ from wsgiref.handlers import format_date_time
 
 import requests
 
-from json_type import Json
+from project.json_type import Json
 
 
 @lru_cache()
