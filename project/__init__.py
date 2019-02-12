@@ -11,7 +11,7 @@ from pymongo import MongoClient
 from project import config
 from project import http_signature
 from project import util
-from project.activity_type import ActivityType
+from project.activity_stream import Actor, Activity, ActivityType
 from project.models import User, Follower
 
 app = Flask(__name__)
@@ -60,8 +60,8 @@ def inbox() -> Response:
             return Response(status=404)
 
         request_body, actor = result
-        activity = json.loads(request_body.decode())
-        activity_type = activity["type"]
+        activity = Activity(json.loads(request_body.decode()))
+        activity_type = activity.get_type()
 
         if activity_type == ActivityType.FOLLOW:
             follower_collection = Follower(DB)
@@ -84,20 +84,23 @@ def outbox() -> Response:
     if not request.is_json:
         return Response("Error: Request is not json", status=404)
 
-    activity = json.loads(request.data.decode())
+    activity = Activity(json.loads(request.data.decode()))
 
-    actor_id = get_id_by_activity(activity)
+    # TODO: ActivityのほうにidのURI探すメソッド入れる方がよくない?わからん……
+    actor_id = get_id_by_activity(activity.get_activity_object())
     if actor_id is None:
         return Response("Error: Not Found Object ID", status=404)
 
-    actor = util.get_actor(actor_id)
-    if actor is None:
+    actor_dict = util.get_actor(actor_id)
+    if actor_dict is None:
         return Response("Error: Actor is None", status=404)
 
-    if "inbox" not in actor:
+    actor = Actor(actor_dict)
+
+    if actor.get_inbox() is None:
         return Response("Error: Actor don't have inbox", status=404)
 
-    inbox_url = actor["inbox"]
+    inbox_url = actor.get_inbox()
     url = urlparse(inbox_url)
     host = url.netloc
     resource = url.path
@@ -109,7 +112,8 @@ def outbox() -> Response:
     }
 
     user_collection = User(DB).get()
-    key_id = user_collection["actor"]["publicKey"]["id"]
+    user = Actor(user_collection["actor"])
+    key_id = user.get_public_key()["id"]
     signature = http_signature.build("POST", resource, headers, key_id, config.KEYPAIR)
     headers["Signature"] = signature
 
@@ -164,7 +168,7 @@ def route_url(path: str) -> str:
 
 
 def get_id_by_activity(act) -> Optional[str]:
-    def __inner(activity, count):
+    def __inner(activity, count: int):
         if count > 3:
             return None
 
@@ -177,7 +181,7 @@ def get_id_by_activity(act) -> Optional[str]:
                 return None
 
         if "object" in activity:
-            if type(activity["object"]) is str:
+            if isinstance(activity["object"], str):
                 return activity["object"]
             return __inner(activity["object"], count+1)
         return None
