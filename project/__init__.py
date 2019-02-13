@@ -11,6 +11,7 @@ from pymongo import MongoClient
 from project import config
 from project import http_signature
 from project import util
+from project.activity_stream import helper
 from project.activity_stream import Actor, Activity, ActivityType
 from project.models import User, Follower
 
@@ -60,13 +61,12 @@ def inbox() -> Response:
             return Response(status=404)
 
         request_body, actor = result
-        activity = Activity(json.loads(request_body.decode()))
-        activity_type = activity.get_type()
+        activity = helper.activity_from(json.loads(request_body.decode()))
 
-        if activity_type == ActivityType.FOLLOW:
+        if activity == ActivityType.FOLLOW:
             follower_collection = Follower(DB)
             follower_collection.add(actor)
-        elif activity_type == ActivityType.UNDO:
+        elif activity == ActivityType.UNDO:
             follower_collection = Follower(DB)
             follower_collection.remove(actor["id"])
         else:
@@ -117,7 +117,7 @@ def outbox() -> Response:
     signature = http_signature.build("POST", resource, headers, key_id, config.KEYPAIR)
     headers["Signature"] = signature
 
-    result = requests.request("POST", inbox, headers=headers, json=activity)
+    result = requests.request("POST", inbox_url, headers=headers, json=activity.get_activity_object())
 
     return Response(result.text, status=result.status_code)
 
