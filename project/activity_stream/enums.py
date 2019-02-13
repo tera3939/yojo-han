@@ -1,12 +1,12 @@
 from enum import Enum
-from project.activity_stream import Activity, Actor
+from project.activity_stream import Activity, Actor, IntransitiveActivity
 
 
 class ActivityType(Enum):
+    ACTIVITY = "Activity"
     ACCEPT = "Accept"
     TENTATIVE_ACCEPT = "TentativeAccept"
     ADD = "Add"
-    ARRIVE = "Arrive"
     CREATE = "Create"
     DELETE = "Delete"
     FOLLOW = "Follow"
@@ -30,12 +30,28 @@ class ActivityType(Enum):
     BLOCK = "Block"
     FLAG = "Flag"
     DISLIKE = "Dislike"
-    QUESTION = "Question"
 
     def __eq__(self, other) -> bool:
         if isinstance(other, Activity):
             return self.value == other.get_type()
-        return False
+        elif isinstance(other, str):
+            return self.value == other
+        else:
+            return False
+
+
+class IntransitiveActivityType(Enum):
+    INTRANSITIVE_ACTIVITY = "IntransitiveActivity"
+    ARRIVE = "Arrive"
+    QUESTION = "Question"
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, IntransitiveActivity):
+            return self.value == other.get_type()
+        elif isinstance(other, str):
+            return self.value == other
+        else:
+            return False
 
 
 class ActorType(Enum):
@@ -48,4 +64,7 @@ class ActorType(Enum):
     def __eq__(self, other) -> bool:
         if isinstance(other, Actor):
             return self.value == other.get_type()
-        return False
+        elif isinstance(other, str):
+            return self.value == other
+        else:
+            return False
