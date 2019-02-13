@@ -1,6 +1,8 @@
 /__pycache__
+/gencode
 /project/__pycache__
 /project/models/__pycache__
+/project/activity_stream/__pycache__
 /.mypy_cache
 /.venv
 /.idea
